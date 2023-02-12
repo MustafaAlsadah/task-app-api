@@ -24,6 +24,17 @@ router.post("/users/logout", auth, async (req, res)=>{
     }
 })
 
+router.post("/users/logoutAll", auth, async (req, res)=>{
+    try {
+        req.user.tokens = []
+        await req.user.save()
+
+        res.status(200).send("Logged out completely")
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+})
+
 router.post("/users", async (req, res)=>{ //Signup
     const userFields = req.body
     const userInstance = new User(userFields)
@@ -50,21 +61,7 @@ router.get("/users/me", auth, async (req, res)=>{
     }
 })
 
-router.get("/users/:id", async (req, res)=>{
-
-        try {
-            const id = req.params.id
-            const user = await User.findById(id)
-            if(!user){
-                return res.status(404).end()
-            }
-            res.status(200).send(user)
-        } catch (error) {
-            res.status(500).send(error.message)
-        }
-})
-
-router.patch("/users/:id", async (req, res)=>{
+router.patch("/users/me", auth, async (req, res)=>{
     const validUpdates = ["name", "age", "email", "password"]
     const updates = Object.keys(req.body)
     const isValidUpdate = validateUpdates(validUpdates, req.body)
@@ -74,12 +71,8 @@ router.patch("/users/:id", async (req, res)=>{
     }
 
     try { 
-        const id = req.params.id
-        const user = await User.findById(id)
+        const user = req.user
 
-        if(!user){
-            return res.status(404).end()
-        }
         updates.forEach(update => {
              user[update] = req.body[update]
         });
@@ -91,17 +84,12 @@ router.patch("/users/:id", async (req, res)=>{
     }
 })
 
-router.delete("/users/:id", async (req, res)=>{
+router.delete("/users/me", auth, async (req, res)=>{
     try {
-        const id = req.params.id
-        const user = await User.findByIdAndDelete(id)
-        if(!user){
-           return res.status(404).end()
-        }
-        
-        res.send(user)
+        const deletedUser = await req.user.remove()
+        res.send(deletedUser)
     } catch (error) {
-        res.status(500).send(error)
+        res.status(500).send(error.message)
     }
 })
 

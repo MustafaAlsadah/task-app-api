@@ -2,7 +2,8 @@ const jwt = require("jsonwebtoken")
 const user = require("../models/user")
 const User = require("../models/user")
 
-const auth = async (req, res, next)=>{
+const auth = /* A middleware function that is used to authenticate the user. */
+async (req, res, next)=>{
     try {
         const token = req.header("Authorization").replace("Bearer", "").trim()
         const decodedToken = await jwt.verify(token, "dontdozat")

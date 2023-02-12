@@ -73,6 +73,14 @@ userSchema.methods.generateAuthToken = async function(payload){
     return token
 }
 
+userSchema.methods.toJSON = function(){
+    const user = this
+    const userJson = user.toObject()
+    delete userJson.tokens
+    delete userJson.password
+    return userJson
+}
+
 /* It's a middleware that hashes the password before saving it to the database. */
 userSchema.pre("save", async function(next){
     const user = this
